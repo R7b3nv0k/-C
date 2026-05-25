@@ -1,0 +1,148 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace Kalapácsvetés
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            List<Sportolo> sportolok = new List<Sportolo>();
+
+            string[] sorok = File.ReadAllLines("kalapacsvetes.txt");
+            for (int i = 1; i < sorok.Length; i++) 
+            {
+                sportolok.Add(new Sportolo(sorok[i]));
+            }
+            Console.WriteLine("1.Feladat: File sikeresen beolvasva");
+
+
+            Console.WriteLine($"4.Feladat: Ennyi dobás eredmenye talalhato a forrásban: {sportolok.Count()}");
+
+            double magyarOsszeg = 0;
+            int magyarDarab = 0;
+            double atlag = 0;
+
+            foreach (var item in sportolok)
+            {
+                if (item.Országkód == "HUN")
+                {
+                    magyarOsszeg += item.Eredmény;
+                    magyarDarab++;
+                }
+                if (magyarOsszeg > 0) { 
+                    atlag = magyarOsszeg / magyarDarab;
+                }
+            }
+            Console.WriteLine($"5.Fealadt: ennyi a magyar atlag helyzes:{atlag:F2}");
+
+            Console.WriteLine("6.Feladat:");
+            Console.Write("Kérek egy évszámot:");
+            string beker = Console.ReadLine();
+
+            List<String> talaltnevek = new List<String>();
+
+            foreach (var item in sportolok)
+            {
+                if (item.Dátum.StartsWith(beker))
+                {
+                    talaltnevek.Add(item.Sportoló);
+
+                }
+            }
+                if (talaltnevek.Count() > 0)
+                {
+                    Console.WriteLine($"Ebben az evben {talaltnevek.Count} dobó kerult be a legjobbak koze. Neveik:");
+                    
+                    foreach (var i in talaltnevek)
+                    {
+                        Console.WriteLine($"{i}");
+                    }
+
+                }
+                else {
+                    Console.WriteLine("Ebben az  evben egyetlen dobo sem kerult be a legjobbak koze");
+
+                }
+            //int URS = 0;
+            //int BLR = 0;
+            //int JPN = 0;
+            //int HUN = 0;
+            //int POL = 0;
+            //Console.WriteLine("7.Feladat:");
+            //foreach (var item in sportolok)
+            //{
+            //    if (item.Országkód == "URS") {
+            //        URS++;
+            //    }
+            //    if (item.Országkód == "BLR")
+            //    {
+            //        BLR++;
+            //    }
+            //    if (item.Országkód == "JPN")
+            //    {
+            //        JPN++;
+            //    }
+            //    if (item.Országkód == "HUN")
+            //    {
+            //        HUN++;
+            //    }
+            //    if (item.Országkód == "POL")
+            //    {
+            //        POL++;
+            //    }
+            //}
+            //Console.WriteLine($"URS:{URS}");
+
+
+
+            //ALTERNATIVA:
+
+            // 7. feladat: Statisztika készítése
+            Console.WriteLine("\n7. feladat: Statisztika");
+
+            // Létrehozunk egy szótárat: Kulcs = Országkód (string), Érték = Darabszám (int)
+            Dictionary<string, int> statisztika = new Dictionary<string, int>();
+
+            foreach (var item in sportolok)
+            {
+                // Megnézzük, hogy az aktuális országkód benne van-e már a szótárban
+                if (statisztika.ContainsKey(item.Országkód))
+                {
+                    // Ha igen, megnöveljük a darabszámot 1-gyel
+                    statisztika[item.Országkód]++;
+                }
+                else
+                {
+                    // Ha nincs, akkor beletesszük 1-es kezdő darabszámmal
+                    statisztika.Add(item.Országkód, 1);
+                }
+            }
+
+            // A kész statisztika kiíratása
+            foreach (var elem in statisztika)
+            {
+                // Az elem.Key az országkód (pl. HUN, URS), az elem.Value a darabszám
+                Console.WriteLine($"\t{elem.Key} - {elem.Value} dobás");
+            }
+
+            Console.WriteLine("8.Feladat: Magyar sportolok adatainak mentese");
+
+            using (StreamWriter sw = new StreamWriter("magyarok.txt", false))
+            {
+                sw.WriteLine("Helyezes;Eredmény;Sportoló;Helyszín;Dátum");
+
+                foreach (var item in sportolok)
+                {
+                    if (item.Országkód == "HUN")
+                    {
+                        sw.WriteLine($"{item.Helyezés}; {item.Eredmény}; {item.Sportoló}; {item.Helyszín}; {item.Dátum}");
+                    }
+                }
+            }
+            Console.WriteLine("A magyarok.txt file sikeresen elkeszult");
+                Console.ReadLine();
+        }
+    }
+}
