@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace illatszerek
+{
+    internal class Program
+    {
+        // 6. Feladat: Segédfüggvény a típusok teljes nevének visszaadásához
+        // (A Main metóduson kívül, de az osztályon belül kap helyet)
+        static string Kategoria(string tipus)
+        {
+            switch (tipus)
+            {
+                case "EDP":
+                    return "Eau de parfum";
+                case "EDT":
+                    return "Eau de Toilette";
+                case "EDC":
+                    return "Eau de Cologne";
+                default:
+                    return "Ismeretlen";
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            // 1. Feladat: Adatszerkezet létrehozása és beolvasás
+            List<Parfum> parfumok = new List<Parfum>();
+
+            // Fájl összes sorának beolvasása egy tömbbe
+            string[] sorok = File.ReadAllLines("parfum_keszlet.txt");
+
+            // Ciklus 1-től indul, hogy a fejlécet (0. index) automatikusan átugorjuk
+            for (int i = 1; i < sorok.Length; i++)
+            {
+                parfumok.Add(new Parfum(sorok[i]));
+            }
+            Console.WriteLine("1.Feladat: Sikeres file beolvasas");
+
+            // 2. Feladat: Lista elemeinek megszámlálása a .Count tulajdonsággal
+            Console.WriteLine($"2.Feladat: A nyilvan tartasban ennyi parfum szerepel: {parfumok.Count}");
+
+            // 3. Feladat: Összegzés tétel
+            int osszertek = 0;
+            foreach (var item in parfumok)
+            {
+                // FIGYELEM: Itt javítottam! A += kell ide, hogy hozzáadja az eddigiekhez, ne pedig felülírja.
+                osszertek += item.Ar * item.Keszlet;
+            }
+            Console.WriteLine($"3.Feladat: A raktaron levo termekek osszerteke:{osszertek}");
+
+            // 4. Feladat: Keresés és feltételes összegzés bekérés alapján
+            Console.WriteLine("\n4.Feladat: Kérem egy parfum markajat:");
+            string bekert = Console.ReadLine();
+            int markakeszet = 0;
+
+            // Logikai változó annak ellenőrzésére, hogy van-e egyáltalán ilyen márka
+            bool vanilyenmarka = false;
+
+            foreach (var item in parfumok)
+            {
+                // ToLower() a kis- és nagybetűk különbségének (pl. Dior vs dior) kiküszöbölésére
+                if (item.Marka.ToLower() == bekert.ToLower())
+                {
+                    vanilyenmarka = true;
+                    markakeszet += item.Keszlet; // Növeljük a talált márka készletét
+                }
+            }
+
+            if (vanilyenmarka)
+            {
+                Console.WriteLine($"A keresett markabol osszesen ennyi darab van:{markakeszet}");
+            }
+            else
+            {
+                Console.WriteLine("A marka nem talalhato");
+            }
+
+            // 5. Feladat: Maximumkiválasztás tétel egyedi feltétellel
+            Console.WriteLine("\n5.Feladat");
+
+            // Kezdőérték null, hogy ne egy 0 készletes (üres) elemet vegyünk véletlenül alapul
+            Parfum legdrabb = null;
+
+            foreach (var item in parfumok)
+            {
+                // Csak azokat nézzük, amiből van legalább 1 darab a raktáron
+                if (item.Keszlet > 0)
+                {
+                    // Ha még nincs kinevezett legdrágább, VAGY a mostani elem drágább az eddiginél
+                    if (legdrabb == null || item.Ar > legdrabb.Ar)
+                    {
+                        legdrabb = item; // Ő lesz az új rekorder
+                    }
+                }
+            }
+
+            Console.WriteLine($"Azonosito: {legdrabb.Azonosito}");
+            Console.WriteLine($"Márkája: {legdrabb.Marka}");
+            Console.WriteLine($"Nev: {legdrabb.Nev}");
+            Console.WriteLine($"Urtartalon: {legdrabb.Urtartalom}");
+            Console.WriteLine($"Ar: {legdrabb.Ar}");
+
+            // 7. Feladat: Statisztika készítése Dictionary (szótár) segítségével
+            Console.WriteLine("\n7.Feladat: Statisztika");
+            Dictionary<string, int> statisztika = new Dictionary<string, int>();
+
+            foreach (var item in parfumok)
+            {
+                // Ha a típus már benne van a szótárban, növeljük a darabszámát 1-gyel
+                if (statisztika.ContainsKey(item.Tipus))
+                {
+                    statisztika[item.Tipus]++;
+                }
+                else
+                {
+                    // Ha még nincs benne, hozzáadjuk a szótárhoz 1-es kezdőértékkel
+                    statisztika.Add(item.Tipus, 1);
+                }
+            }
+
+            // Végigmegyünk a teljesen feltöltött statisztikán és kiíratjuk
+            foreach (var elem in statisztika)
+            {
+                // Itt hívjuk meg a 6. feladatban írt függvényt a magyar megnevezéshez
+                string teljesNev = Kategoria(elem.Key);
+                Console.WriteLine($"\t{teljesNev}: {elem.Value}");
+            }
+
+            // 8. Feladat: Fájlba írás kiválogatással (szűrés)
+            Console.WriteLine("\n8.Feladat: Fájlba iras");
+
+            // A StreamWriter megnyitja/létrehozza a fájlt, a 'using' blokk pedig a végén automatikusan lezárja
+            using (StreamWriter sw = new StreamWriter("rendeles.txt"))
+            {
+                foreach (Parfum item in parfumok)
+                {
+                    // Feltétel: Csak azokat írjuk ki, amiből 5 vagy annál kevesebb van
+                    if (item.Keszlet <= 5)
+                    {
+                        sw.WriteLine($"{item.Marka} - {item.Nev} - {item.Tipus} - {item.Urtartalom} ml");
+                    }
+                }
+            }
+            Console.WriteLine("A renedles.txt fajl sikeresen elkeszult");
+        }
+    }
+}
