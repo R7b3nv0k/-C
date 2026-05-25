@@ -1,0 +1,32 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Kalapácsvetés
+{
+    internal class Sportolo
+    {
+        public int Helyezés { get; set; }
+        public double Eredmény { get; set; }
+        public string Sportoló { get; set; }
+        public string Országkód { get; set; }
+        public string Helyszín { get; set; }
+        public string Dátum { get; set; }
+
+
+        public Sportolo(string sor)
+        {
+            string[] adatok = sor.Split(';');
+
+            Helyezés = int.Parse(adatok[0]);
+            Eredmény = double.Parse(adatok[1]);
+            Sportoló = adatok[2];
+            Országkód = adatok[3];
+            Helyszín = adatok[4];
+            Dátum = adatok[5];
+        }
+    }
+
+}
